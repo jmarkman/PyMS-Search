@@ -3,20 +3,30 @@
 the singular insured account information as a list."""
 
 import pyodbc
+import os
 
-# Read SQL login credentials from external file (currently on my flash drive)
-with open(r'F:/Programming/Work/login.txt') as loginFile:
-    CREDENTIALS = loginFile.readlines()
-CREDENTIALS = (x.strip() for x in CREDENTIALS)
-# Store CREDENTIALS in tuple, make sure any extra spaces aren't there
+def get_connect_info():
+    """Gets login info from file and returns login credentials"""
+    # Establish path to login credentials file
+    login_path = os.path.dirname(__file__) # Get location of currently running script
+    login_dir = os.path.split((login_path))[0] # cd ..
+    file_name = "login.txt" # File name of said file
+    complete_login_path = os.path.join(login_dir, file_name) # Join the file name and the path together
 
-SERVER, USER, PASSWORD, DATABASE = CREDENTIALS # Unpack tuple into variables
+    with open(complete_login_path) as login:
+        login_credentials = login.readlines()
+    # Store login_credentials in tuple, make sure any extra spaces aren't there
+    login_credentials = (x.strip() for x in login_credentials)
+    return login_credentials
 
 def connect():
     """Connects to the database and returns the cursor for getting values from the database"""
+    # Unpack login credential tuple into variables
+    server, user, password, database = get_connect_info()
+
     conn = pyodbc.connect(
         r"Driver={0};Server={1};DATABASE={2};UID={3};PWD={4};".format(
-            "ODBC Driver 11 for SQL Server", SERVER, DATABASE, USER, PASSWORD)
+            "ODBC Driver 11 for SQL Server", server, database, user, password)
         )
     cursor = conn.cursor()
     return cursor
